@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Mp3 Player</title>
+  <script src="font/js/all.js"></script>
+  <link rel="stylesheet" type="text/css" href="font/css/all.css">
+  <script>
+	window.$ = window.jQuery = require("./jquery.js");
+  </script>
+  <script src="jquery.firefly.js"></script>
+  <style>
+	html {
+		/* Webkit (Safari/Chrome 10) */ 
+		background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0, #C71585), color-stop(1, #191970 ));
+		background-repeat: no-repeat;
+		background-attachment: fixed;
+		overflow:hidden;
+		
+		-webkit-user-select: none; 
+		-moz-user-select: none; 
+		-ms-user-select: none; 
+		user-select: none; 
+	}
+	
+	#audio {
+		 position: fixed;
+		 left: 0;
+		 bottom: 0;
+		 width: 100%;
+	}
+	
+	#id_song {
+		color: #fff;
+		text-align: center;
+		font-family: 'Open Sans', sans-serif;
+		font-weight: bold;
+	}
+	
+	aside {
+	  position: absolute;
+	  width: 25%;
+	  height: 100%;
+	  background: #fcfcfc;
+	  right: 0;
+	  top: 0;
+	  display: none;
+	  overflow-y: scroll;
+	  padding-bottom: 20px;
+	  z-index: 1000;
+	  border-left: 1px solid #ccc;
+	}
+	aside ul {
+		padding: 0;
+		margin-bottom: 32px;
+		margin-top: 0;
+	}
+	aside li {
+		display: block;
+		padding: 6px 10px;
+		text-decoration: none;
+		font-size: 12px;
+		color: #000;
+		border-top: 1px solid #ccc;
+		cursor: pointer !important;
+		font-family: 'Open Sans', sans-serif;
+	}
+
+	aside li:hover {
+		color: #191970;
+	}
+	aside a {
+		text-decoration: none;
+		color: #818181;
+	}
+	.cls_hamburger {
+		width: 35px;
+		height: 5px;
+		background-color: #fff;
+		margin: 6px 0;
+	}
+	
+	.list_toggle {
+		margin-left: calc(100% - 40px);
+		cursor: pointer !important;
+	}
+	
+	.list_toggle:focus{
+		outline: none;
+	}
+	
+	.cls_detail {
+		margin-top: 10px;
+	}
+	
+	#id_browse {
+		margin-top:5px;
+		float: left;
+		maring-left: 10px;
+		color: #fcfcfc;
+	}
+  </style>
+</head>
+
+<body>
+  <div class="list_toggle" id="id_hamburger">
+	<div class="cls_hamburger"></div>
+	<div class="cls_hamburger"></div>
+	<div class="cls_hamburger"></div>
+  </div>
+  <div id="id_song">
+	<span id="id_artist_info"></span><br /><br />
+		<img src="vinyl.png" /><br /><br />
+	<span id="id_title">Nincs zene kiválasztva.</span><br />
+	<span id="id_album_info" style="font-size:14px" class="cls_detail"></span><br />
+	<span id="id_year" style="font-size:12px"></span>
+  </div>
+  
+  <aside id="id_aside">
+	<i class="fas fa-folder-open" id="id_browse"></i>
+	<div>
+		<a href="#" class="list_toggle" style="font-size: 26px; margin-top:10px; font-weight: bold; width: 30px; height: 30px; border-bottom: none;">&times;</a>
+	</div>
+	<div id="id_song_ul"></div>
+  </aside>
+
+  <audio controls="controls" id="audio">
+   <source id="id_audio_source" src="" type="audio/mpeg" />
+  </audio>
+<script>
+  const jsmediatags = require("jsmediatags");
+  const os = require('os');
+  const storage = require('electron-json-storage');
+
+  storage.setDataPath(os.tmpdir());
+
+  window.xl_paused = false;
+  var xn_selected_index = null;
+  var audio = document.getElementById('audio');
+  var xn_lista_hossz;
+  var xc_new_file = null;
+  var xc_album_info = null;
+  var xc_artist_info = null;
+  var xn_year = null;
+  
+  $(document).ready(function() {
+    
+	$(window).resize(function(){
+		$('#id_song').css('margin-top', $(window).height() / 3.2);
+	});
+	
+		
+	$(window).resize();
+	
+	$('.list_toggle').on('click', function() {
+		var xl_visible = $('aside').is(":visible");
+		if(xl_visible === false){
+			$('#id_song').css('margin-right','25%');
+			$('#audio').css('width','75%');
+		} else {
+			$('#id_song').css('margin-right','0');
+			$('#audio').css('width','100%');
+		}
+		$('aside').animate({width: 'toggle'}, 200);
+	});
+	
+	//Ha véget ért a szám:
+	audio.addEventListener("ended", function(){
+		audio.currentTime = 0;
+		var folder = window.openedfile.path.substring(0,window.openedfile.path.lastIndexOf("\\")+1);
+		
+		if(xn_selected_index + 1 == window.songList.songs[0].length){
+			xn_selected_index = -1;
+		}
+		xc_new_file = folder + window.songList.songs[0][xn_selected_index+1];
+		//xn_selected_index = window.songList.songs[0].indexOf(window.songList.songs[0][xn_selected_index+1]);
+			xc_new_filename = xc_new_file.split('.').slice(0, -1).join('.');
+			
+			document.getElementById("id_title").innerHTML = window.songList.songs[0][xn_selected_index+1].split('.').slice(0, -1).join('.');
+			var source = document.getElementById('id_audio_source');
+				
+			source.src = xc_new_file;
+			audio.load(); 
+			audio.play();
+			
+	});
+	
+  });
+  
+  function OpenCallback() {
+	$.firefly();
+	var folder = window.openedfile.path.substring(0,window.openedfile.path.lastIndexOf("\\")+1);
+	var filename = window.openedfile.path.replace(/^.*[\\\/]/, '');
+	var ul = document.createElement('ul');
+	
+	
+	document.getElementById('id_song_ul').innerHTML = "";
+	document.getElementById('id_song_ul').appendChild(ul);
+	
+	storage.set('last_played', { file: window.openedfile.path }, function(error) {
+		if (error) throw error;
+	});
+
+	  jsmediatags.read(window.openedfile.path, {
+				onSuccess: function(tag) {
+					xc_album_info = tag.tags.album;
+					xc_artist_info = tag.tags.artist;
+					xn_year = tag.tags.year;
+					
+					if (typeof xc_album_info == 'undefined'){
+						xc_album_info = '';
+					}
+					
+					if (typeof xc_artist_info == 'undefined'){
+						xc_artist_info = '';
+					}
+					
+					if (typeof xn_year == 'undefined'){
+						xn_year = '';
+					}
+					
+					document.getElementById("id_artist_info").innerHTML = xc_artist_info;
+					document.getElementById("id_album_info").innerHTML = xc_album_info;
+					document.getElementById("id_year").innerHTML = xn_year;
+			},
+			onError: function(error) {
+				console.log(':(', error.type, error.info);
+			}
+	});
+	
+	xn_selected_index = window.songList.songs[0].indexOf(filename);
+	
+	window.songList.songs[0].forEach(function (item) {
+		var li = document.createElement('li');
+		li.className = 'cls_song_title';
+		
+		ul.appendChild(li);
+		//'<i class="fas fa-music" style="color: #818181;"></i> '
+		li.innerHTML += '<i class="fas fa-music" style="color: #818181;margin-right:5px;"></i>'+item;
+	});
+	
+	//Listából választás:
+	$(".cls_song_title").click(function() {
+	
+		window.autoStart=true;
+		xc_new_file = folder + $(this).text();
+			  jsmediatags.read(xc_new_file, {
+				onSuccess: function(tag) {
+					//console.log(tag.tags);
+					xc_album_info = tag.tags.album;
+					xc_artist_info = tag.tags.artist;
+					xn_year = tag.tags.year;
+					
+					if (typeof xc_album_info == 'undefined'){
+						xc_album_info = '';
+					}
+					
+					if (typeof xc_artist_info == 'undefined'){
+						xc_artist_info = '';
+					}
+					
+					if (typeof xn_year == 'undefined'){
+						xn_year = '';
+					}
+					
+					document.getElementById("id_artist_info").innerHTML = xc_artist_info;
+					document.getElementById("id_album_info").innerHTML = xc_album_info;
+					document.getElementById("id_year").innerHTML = xn_year;
+			},
+			onError: function(error) {
+				console.log(':(', error.type, error.info);
+			}
+		});
+	
+		xn_selected_index = window.songList.songs[0].indexOf($(this).text());
+		
+		xc_new_filename = $(this).text().split('.').slice(0, -1).join('.');
+			
+			document.getElementById("id_title").innerHTML = xc_new_filename;
+			
+			var source = document.getElementById('id_audio_source');
+				
+			source.src = xc_new_file.replace(/(<([^>]+)>)/ig,"");
+			audio.load(); 
+			audio.play();
+			
+			storage.set('last_played', { file: xc_new_file.replace(/(<([^>]+)>)/ig,"")}, function(error) {
+				if (error) throw error;
+			});
+		
+	});
+		
+	//Formátum nem kell.
+	filename = filename.split('.').slice(0, -1).join('.');
+	
+	document.getElementById("id_title").innerHTML = filename;
+	var source = document.getElementById('id_audio_source');
+	source.src = window.openedfile.path;
+	audio.load(); 
+		
+		if(window.autoStart === true) {
+			audio.play();
+		} else {
+			window.xl_paused = true;
+		}
+		
+		
+	}
+	
+	$('body').keyup(function(e){
+	if(e.keyCode == 32){
+       if(window.xl_paused === false) {
+			audio.pause();
+			window.xl_paused = true;
+	   }else {
+			audio.play();
+			window.xl_paused = false;
+	   }
+       
+	}
+	
+});
+  </script>
+</body>
+</html>
