@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Simple Sidebar - Start Bootstrap Template</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="css/simple-sidebar.css" rel="stylesheet">
+	  <style>
+	#id_log {
+		width: 100%;
+		height: 600px;
+		background: #000;
+		color: yellow;
+		margin: 0 auto;
+		padding:5px;
+		overflow-y: scroll;
+	}
+	
+	#id_controlls {
+		margin: 0 auto;
+	}
+	
+  </style>
+</head>
+
+<body>
+
+    <div id="wrapper" class="toggled">
+
+        <!-- Sidebar -->
+        <div id="sidebar-wrapper">
+            <ul class="sidebar-nav">
+                <li class="sidebar-brand">
+                    <a href="#">
+                        Partnerek
+                    </a>
+                </li>
+                <li>
+                    <a href="#">Dashboard</a>
+                </li>
+                
+            </ul>
+        </div>
+        <!-- /#sidebar-wrapper -->
+
+        <!-- Page Content -->
+        <div id="page-content-wrapper">
+            <div class="container-fluid">
+				<div id="id_log"></div>
+				<br />
+					<input type="text" style="width: 90%" placeholder="Üzenet..." id="id_message">
+					<button style="width: 9%">Küldés</button>
+            </div>
+        </div>
+        <!-- /#page-content-wrapper -->
+
+    </div>
+    <!-- /#wrapper -->
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="vendor/jquery/jquery.min.js"></script>
+    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Menu Toggle Script -->
+    <script>
+   var gl_aktiv;
+		var name = prompt('Ki vagy?');
+		name.replace(/<[^>]+>/g, '');
+		
+		 // Active
+		window.addEventListener('focus', function(){
+			document.title = "Socket";
+			gl_aktiv = true;
+		});
+
+		// Inactive
+		window.addEventListener('blur', function(){
+			gl_aktiv = false;
+		});
+ 
+		if (name.length > 1){
+		var socket = new WebSocket('ws://127.0.0.1:5000');
+		
+		var log = document.getElementById('id_log');
+		
+		socket.onopen = function(e) {
+			socket.send(JSON.stringify({
+				type: "name",
+				data: name
+			}));
+		};
+		
+		
+		socket.onmessage = function(e) {
+			var json = JSON.parse(e.data);
+			
+			console.log(json);
+			if(typeof json.messages != 'undefined'){
+			
+				var xo_arr = [json.messages];
+				
+				for(var i in xo_arr[0])
+				{
+					var name = JSON.parse(xo_arr[0][i]).name;
+					var message = JSON.parse(xo_arr[0][i]).data;
+					log.innerHTML += '<b>'+ name + ': </b>'+message+'<br />';
+				}
+			}
+			
+			log.innerHTML += '<b>'+json.name + ': </b>'+json.data+'<br />';
+			if(gl_aktiv === false) {
+				document.title = "Socket (Új üzenet)";
+			}
+		}
+		
+		document.querySelector('button').onclick = function() {
+			SendMessage();
+		}
+		
+		$( "#id_message" ).keypress(function( event ) {
+		  if ( event.which == 13 ) {
+				SendMessage();
+		  }
+		});
+
+	}
+	
+	function SendMessage(){
+		var message = document.getElementById('id_message').value;
+		if(message.length > 0) {
+			socket.send(JSON.stringify({
+				type: "message",
+				data: message
+			}));
+			log.innerHTML += '<b>Én: </b>' + message + '<br />';
+			document.getElementById('id_message').value = null;
+			$("#id_log").animate({ scrollTop: $('#id_log').prop("scrollHeight")}, 1000);
+		}
+	}
+    </script>
+
+</body>
+
+</html>
