@@ -1,0 +1,40 @@
+{
+  "users": [
+    {
+      "id": 1695238286280,
+      "email": "felician.vass@gmail.com",
+      "name": "admin",
+      "password": "12345"
+    }
+  ],
+  "restaurant": [
+    {
+      "id": 1,
+      "img": "https://cwdaust.com.au/wpress/wp-content/uploads/2015/04/placeholder-restaurant-300x300.png",
+      "name": "Simple Burger",
+      "info": "non stop - open",
+      "address": "Hungary - Nyh"
+    },
+    {
+      "id": 2,
+      "img": "https://cwdaust.com.au/wpress/wp-content/uploads/2015/04/placeholder-restaurant-300x300.png",
+      "name": "Simple Pizza",
+      "info": "non stop - open",
+      "address": "Hungary - Bp"
+    },
+    {
+      "id": 3,
+      "img": "https://cwdaust.com.au/wpress/wp-content/uploads/2015/04/placeholder-restaurant-300x300.png",
+      "name": "Simple Gyros",
+      "info": "non stop - open",
+      "address": "Hungary - Deb"
+    },
+    {
+      "name": "Simple Coffee",
+      "img": "https://cwdaust.com.au/wpress/wp-content/uploads/2015/04/placeholder-restaurant-300x300.png",
+      "info": "Good place!",
+      "address": "Hungary - Miskolc",
+      "id": 4
+    }
+  ]
+}
